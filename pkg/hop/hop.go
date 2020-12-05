@@ -147,21 +147,36 @@ func (h *HopStatistic) Render(ptrLookup bool) {
 		i--
 	})
 	l := fmt.Sprintf("%d", h.RingBufferSize)
-	gm.Printf("%3d:|-- %-20s  %5.1f%%  %4d  %6.1f  %6.1f  %6.1f  %6.1f  %"+l+"s\n",
-		h.TTL,
-		fmt.Sprintf("%.20s", h.lookupAddr(ptrLookup)),
-		h.Loss(),
-		h.Sent,
-		h.Last.Elapsed.Seconds()*1000,
-		h.Avg(),
-		h.Best.Elapsed.Seconds()*1000,
-		h.Worst.Elapsed.Seconds()*1000,
-		packets,
-	)
+	lookupAddr := h.lookupAddr((ptrLookup))
+	if lookupAddr != h.Target {
+		gm.Printf("%3d:|-- %-20s  %6.1s  %4s  %6.1s  %6.1s  %6.1s  %6.1s  %"+l+"s\n",
+			h.TTL,
+			fmt.Sprintf("%.20s", lookupAddr),
+			"-",
+			"-",
+			"-",
+			"-",
+			"-",
+			"-",
+			packets,
+		)
+	} else {
+		gm.Printf("%3d:|-- %-20s  %5.1f%%  %4d  %6.1f  %6.1f  %6.1f  %6.1f  %"+l+"s\n",
+			h.TTL,
+			fmt.Sprintf("%.20s", lookupAddr),
+			h.Loss(),
+			h.Sent,
+			h.Last.Elapsed.Seconds()*1000,
+			h.Avg(),
+			h.Best.Elapsed.Seconds()*1000,
+			h.Worst.Elapsed.Seconds()*1000,
+			packets,
+		)
+	}
 }
 
 func (h *HopStatistic) lookupAddr(ptrLookup bool) string {
-	addr := "???"
+	addr := "(waiting for reply)"
 	if h.Target != "" {
 		addr = h.Target
 		if ptrLookup {
